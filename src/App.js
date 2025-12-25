@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import './App.css';
 
 function App() {
@@ -12,6 +12,85 @@ function App() {
   const [isShaking, setIsShaking] = useState(false);
   const [showSuccessPage, setShowSuccessPage] = useState(false);
 
+  // Funciones para reproducir sonidos
+  const playSuccessSound = useCallback(() => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // Crear un sonido agradable tipo Duolingo (acorde mayor)
+    const frequencies = [523.25, 659.25, 783.99]; // Do, Mi, Sol
+    const duration = 0.3;
+    
+    frequencies.forEach((freq, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+      
+      oscillator.start(audioContext.currentTime + index * 0.1);
+      oscillator.stop(audioContext.currentTime + duration + index * 0.1);
+    });
+  }, []);
+
+  const playErrorSound = useCallback(() => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // Crear un sonido de error (frecuencias descendentes)
+    const frequencies = [400, 300, 200];
+    const duration = 0.2;
+    
+    frequencies.forEach((freq, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+      oscillator.type = 'sawtooth';
+      
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+      
+      oscillator.start(audioContext.currentTime + index * 0.1);
+      oscillator.stop(audioContext.currentTime + duration + index * 0.1);
+    });
+  }, []);
+
+  const playCompletionSound = useCallback(() => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // Sonido de victoria más elaborado
+    const melody = [523.25, 659.25, 783.99, 1046.50]; // Do, Mi, Sol, Do alto
+    const duration = 0.4;
+    
+    melody.forEach((freq, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+      
+      oscillator.start(audioContext.currentTime + index * 0.15);
+      oscillator.stop(audioContext.currentTime + duration + index * 0.15);
+    });
+  }, []);
+
   // Función para manejar el clic en un botón
   const handleButtonClick = (color) => {
     if (isShaking) return; // No permitir clicks durante la animación
@@ -21,7 +100,9 @@ function App() {
     
     // Verificar si el color es correcto
     if (color === correctSequence[currentIndex]) {
-      // Color correcto
+      // Color correcto - reproducir sonido de éxito
+      playSuccessSound();
+      
       const newIndicators = [...indicators];
       newIndicators[currentIndex] = 'green';
       setIndicators(newIndicators);
@@ -30,11 +111,15 @@ function App() {
       // Verificar si se completó la secuencia
       if (newSequence.length === correctSequence.length) {
         setTimeout(() => {
+          playCompletionSound();
           setShowSuccessPage(true);
         }, 500);
       }
     } else {
-      // Color incorrecto - mostrar error y reiniciar
+      // Color incorrecto - reproducir sonido de error
+      playErrorSound();
+      
+      // Mostrar error y reiniciar
       setIsError(true);
       setIsShaking(true);
       setIndicators(Array(6).fill('red'));
