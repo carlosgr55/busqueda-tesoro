@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import './App.css';
 
 function App() {
@@ -20,7 +20,9 @@ function App() {
     
     // Verificar si el color es correcto
     if (color === correctSequence[currentIndex]) {
-      // Color correcto
+      // Color correcto - reproducir sonido de éxito
+      playSuccessSound();
+      
       const newIndicators = [...indicators];
       newIndicators[currentIndex] = 'green';
       setIndicators(newIndicators);
@@ -33,7 +35,10 @@ function App() {
         }, 500);
       }
     } else {
-      // Color incorrecto - mostrar error y reiniciar
+      // Color incorrecto - reproducir sonido de error
+      playErrorSound();
+      
+      // Mostrar error y reiniciar
       setIsError(true);
       setIsShaking(true);
       setIndicators(Array(6).fill('red'));
