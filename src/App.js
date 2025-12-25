@@ -10,6 +10,7 @@ function App() {
   const [indicators, setIndicators] = useState(Array(6).fill('gray'));
   const [isError, setIsError] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
+  const [showSuccessPage, setShowSuccessPage] = useState(false);
 
   // Función para manejar el clic en un botón
   const handleButtonClick = (color) => {
@@ -29,7 +30,7 @@ function App() {
       // Verificar si se completó la secuencia
       if (newSequence.length === correctSequence.length) {
         setTimeout(() => {
-          alert('FELICIDADES EL TESORO ESTÁ EN 1D');
+          setShowSuccessPage(true);
         }, 500);
       }
     } else {
@@ -55,6 +56,27 @@ function App() {
     setIsError(false);
     setIsShaking(false);
   };
+
+  // Función para regresar a la página principal
+  const returnToMain = () => {
+    setShowSuccessPage(false);
+    resetGame();
+  };
+
+  // Si se debe mostrar la página de éxito
+  if (showSuccessPage) {
+    return (
+      <div className="App">
+        <div className="success-container">
+          <h1>¡FELICIDADES!</h1>
+          <h2>EL TESORO ESTÁ EN 1D</h2>
+          <button className="continue-button" onClick={returnToMain}>
+            Continuar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="App">
